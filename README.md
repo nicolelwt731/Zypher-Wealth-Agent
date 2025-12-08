@@ -85,7 +85,6 @@ The `memory.ts` module provides persistent user memory management through the `M
 interface UserMemory {
   risk_tolerance?: string; // "Low", "Medium", or "High"
   last_interaction?: string; // ISO timestamp
-  investment_focus?: string; // User's investment focus area
 }
 ```
 
@@ -112,7 +111,6 @@ The system uses two separate JSON files for different purposes:
 {
   "risk_tolerance": "Low",
   "last_interaction": "2025-12-08T17:53:00.009Z",
-  "investment_focus": "Tech"
 }
 ```
 
@@ -120,7 +118,6 @@ The system uses two separate JSON files for different purposes:
 
 - `risk_tolerance`: User's risk profile (Low/Medium/High)
 - `last_interaction`: Timestamp of last agent interaction
-- `investment_focus`: Optional investment focus area
 
 **Managed by**: `MemoryManager` class in `memory.ts`
 **Updated when**: User sets risk tolerance or interacts with agent
