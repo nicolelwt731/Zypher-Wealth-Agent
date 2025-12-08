@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zypher Wealth Agent</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">💎 ZYPHER WEALTH AGENT</h1>
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-dot"></span>
+                    <span id="statusText">Ready</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel: Stock Data -->
+            <div class="panel left-panel">
+                <h2 class="panel-title">📊 Market Data</h2>
+                <div class="stock-table-container">
+                    <table class="stock-table" id="stockTable">
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Price</th>
+                                <th>Change</th>
+                                <th>Sentiment</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody">
+                            <!-- Stock data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Panel: Agent Interface -->
+            <div class="panel right-panel">
+                <h2 class="panel-title">🤖 Agent Interface</h2>
+
+                <!-- Risk Profile -->
+                <div class="risk-profile-section">
+                    <label for="riskSelect">Risk Tolerance:</label>
+                    <select id="riskSelect" class="risk-select">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+
+                <!-- Query Input -->
+                <div class="query-section">
+                    <label for="queryInput">Your Query:</label>
+                    <textarea
+                        id="queryInput"
+                        class="query-input"
+                        placeholder="Check my portfolio. Then, given my risk profile, recommend a stock but verify it with live news first."
+                        rows="3"
+                    ></textarea>
+                    <button id="runButton" class="run-button">🚀 Run Agent</button>
+                </div>
+
+                <!-- Output Area -->
+                <div class="output-section">
+                    <h3>💡 Recommendation</h3>
+                    <div class="output-container" id="outputContainer">
+                        <div class="output-placeholder">
+                            Click "Run Agent" to get a stock recommendation...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tool Calls Log -->
+                <div class="tools-section">
+                    <h3>🛠️ Tool Calls</h3>
+                    <div class="tools-container" id="toolsContainer">
+                        <div class="tools-placeholder">No tool calls yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
+
