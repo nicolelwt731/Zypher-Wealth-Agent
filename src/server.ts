@@ -3,6 +3,56 @@ import { join } from "@std/path";
 
 const PORT = 8000;
 
+// Helper function to free up port if it's in use
+async function freePort(port: number): Promise<void> {
+  try {
+    // Try to find process using the port (macOS/Linux)
+    const command = new Deno.Command("lsof", {
+      args: ["-ti", `:${port}`],
+      stdout: "piped",
+      stderr: "piped",
+    });
+
+    const { code, stdout } = await command.output();
+
+    if (code === 0 && stdout.length > 0) {
+      const pid = new TextDecoder().decode(stdout).trim();
+      if (pid) {
+        console.log(
+          `⚠️  Port ${port} is in use by process ${pid}. Killing it...`
+        );
+
+        const killCommand = new Deno.Command("kill", {
+          args: [pid],
+          stdout: "piped",
+          stderr: "piped",
+        });
+
+        const killResult = await killCommand.output();
+        if (killResult.code === 0) {
+          console.log(
+            `✅ Process ${pid} terminated. Port ${port} is now free.`
+          );
+          // Wait a bit for the port to be fully released
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        } else {
+          console.log(
+            `⚠️  Failed to kill process ${pid}, but continuing anyway...`
+          );
+        }
+      }
+    }
+  } catch (error) {
+    // If lsof/kill commands fail (e.g., on Windows), just continue
+    // The server will fail with a clear error if port is still in use
+    console.log(
+      `ℹ️  Could not check/free port ${port}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
+}
+
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const pathname = url.pathname;
@@ -180,6 +230,9 @@ async function handler(req: Request): Promise<Response> {
     );
   }
 }
+
+// Free up port before starting server
+await freePort(PORT);
 
 console.log(
   `🚀 Zypher Wealth Agent Web Server running on http://localhost:${PORT}`

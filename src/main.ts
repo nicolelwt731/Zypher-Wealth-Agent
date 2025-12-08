@@ -162,7 +162,29 @@ export async function* agentRunner(
 
     yield { type: "risk", data: userRisk };
 
-    // Build system context
+    // Build system context with explicit stock candidates based on risk
+    // Risk mapping logic (based on real investment principles):
+    // - Low Risk: Conservative investors → Stable, established companies with Positive sentiment
+    //   (Large-cap stocks with consistent performance, lower volatility)
+    // - Medium Risk: Moderate investors → Balanced mix of Positive and Neutral stocks
+    //   (Mix of stable growth and moderate volatility)
+    // - High Risk: Aggressive investors → High-growth stocks with Very Positive sentiment
+    //   (High volatility, high growth potential stocks)
+    const getCandidatesByRisk = (risk: string) => {
+      if (risk === "Low") {
+        // Low risk: Stable, established companies with positive but not extreme sentiment
+        return "AAPL (Positive), MSFT (Positive), V (Positive), GOOGL (Neutral), JPM (Neutral)";
+      } else if (risk === "Medium") {
+        // Medium risk: Mix of stable positive and neutral stocks
+        return "AAPL (Positive), MSFT (Positive), TSLA (Neutral), GOOGL (Neutral), JPM (Neutral)";
+      } else {
+        // High risk: High-growth, high-volatility stocks with very positive sentiment
+        return "NVDA (Very Positive), META (Very Positive), MSFT (Positive), AAPL (Positive)";
+      }
+    };
+
+    const candidates = getCandidatesByRisk(userRisk);
+
     const systemContext = `
 You are Zypher Wealth, a hands-on investment assistant.
 
@@ -198,30 +220,54 @@ When you search Bloomberg for a stock, extract the sentiment from the articles:
 - **If sentiments DIFFER**: Use the Bloomberg sentiment (live data takes priority)
 - Report both sentiments in your analysis
 
-[RISK TOLERANCE MAPPING]
-Your Risk Profile is: ${userRisk}
-- **Low Risk** → Recommend stocks with "Positive" or "Very Positive" sentiment
-- **Medium Risk** → Recommend stocks with "Neutral" sentiment
-- **High Risk** → Recommend stocks with "Negative" or "Very Negative" sentiment
+[RISK TOLERANCE MAPPING - CRITICAL]
+Your Risk Profile is: **${userRisk}**
+
+**Risk Profile Logic (Investment Strategy):**
+- **Low Risk** (Conservative): Investors seeking stability and capital preservation
+  → Recommend **stable, established companies** with Positive sentiment (large-cap, low volatility)
+  → Examples: AAPL, MSFT, V (stable tech/finance), or Neutral stocks like GOOGL, JPM
+
+- **Medium Risk** (Moderate): Investors seeking balanced growth with moderate risk
+  → Recommend **mix of Positive and Neutral** sentiment stocks (balanced portfolio)
+  → Examples: AAPL, MSFT (stable growth) or TSLA, GOOGL (moderate volatility)
+
+- **High Risk** (Aggressive): Investors seeking high returns and willing to accept high volatility
+  → Recommend **high-growth stocks** with Very Positive sentiment (high volatility, high potential)
+  → Examples: NVDA, META (high-growth tech), or high-performing Positive stocks
+
+**You MUST select from these candidate stocks based on risk profile:**
+- **Low Risk** → ONLY consider: ${getCandidatesByRisk("Low")}
+- **Medium Risk** → ONLY consider: ${getCandidatesByRisk("Medium")}
+- **High Risk** → ONLY consider: ${getCandidatesByRisk("High")}
+
+**⚠️ IMPORTANT RULES:**
+1. **DO NOT always recommend the same stock** (e.g., AAPL). Vary your recommendations based on the risk profile.
+2. **For ${userRisk} risk**, you MUST choose from: ${candidates}
+3. **You MUST verify at least 2-3 candidate stocks** before making a final recommendation
+4. **Select the BEST stock from the candidates** that matches the risk profile, not just the first one you check
+5. **NEVER recommend Negative or Very Negative stocks** - these indicate poor sentiment and should be avoided for all risk profiles
 
 [TASK]
 1. Check portfolio using 'manage_portfolio'.
-2. Based on Risk Profile (${userRisk}), identify candidate stocks from the internal database.
-3. **For each candidate stock**, search Bloomberg: "site:bloomberg.com [TICKER] stock news today"
+2. **Identify ALL candidate stocks** for ${userRisk} risk profile: ${candidates}
+3. **For EACH candidate stock**, search Bloomberg: "site:bloomberg.com [TICKER] stock news today"
+   - You MUST check multiple candidates (at least 2-3), not just one
 4. **Extract sentiment from Bloomberg articles** and compare with Internal DB sentiment:
    - If match: Use Internal DB sentiment
    - If differ: Use Bloomberg sentiment (prefer live data)
-5. **Select ONE stock** that matches your Risk Profile mapping (see above).
+5. **Compare all verified candidates** and select the ONE BEST stock that matches your Risk Profile mapping.
 6. **CRITICAL**: At the END of your response, provide a CLEAR recommendation:
 
 📊 RECOMMENDATION: [TICKER]
 - Internal Sentiment: [from mockData]
 - Bloomberg Sentiment: [from live search]
 - Final Sentiment Used: [which one you're using and why]
-- Reason: [Why this stock matches ${userRisk} risk profile]
+- Reason: [Why this stock matches ${userRisk} risk profile and why it's better than other candidates]
 - Action: [Buy/Hold/Avoid and why]
 
 **Make sure your recommendation is at the very end of your response!**
+**DO NOT always recommend AAPL - vary your recommendations based on risk profile!**
 `;
 
     yield { type: "status", data: "Running agent..." };
@@ -394,6 +440,29 @@ if (import.meta.main) {
 
   printStockTable(STOCK_DATA);
 
+  // Build system context with explicit stock candidates based on risk
+  // Risk mapping logic (based on real investment principles):
+  // - Low Risk: Conservative investors → Stable, established companies with Positive sentiment
+  //   (Large-cap stocks with consistent performance, lower volatility)
+  // - Medium Risk: Moderate investors → Balanced mix of Positive and Neutral stocks
+  //   (Mix of stable growth and moderate volatility)
+  // - High Risk: Aggressive investors → High-growth stocks with Very Positive sentiment
+  //   (High volatility, high growth potential stocks)
+  const getCandidatesByRisk = (risk: string) => {
+    if (risk === "Low") {
+      // Low risk: Stable, established companies with positive but not extreme sentiment
+      return "AAPL (Positive), MSFT (Positive), V (Positive), GOOGL (Neutral), JPM (Neutral)";
+    } else if (risk === "Medium") {
+      // Medium risk: Mix of stable positive and neutral stocks
+      return "AAPL (Positive), MSFT (Positive), TSLA (Neutral), GOOGL (Neutral), JPM (Neutral)";
+    } else {
+      // High risk: High-growth, high-volatility stocks with very positive sentiment
+      return "NVDA (Very Positive), META (Very Positive), MSFT (Positive), AAPL (Positive)";
+    }
+  };
+
+  const candidates = getCandidatesByRisk(userRisk);
+
   // Build system context
   const systemContext = `
 You are Zypher Wealth, a hands-on investment assistant.
@@ -430,30 +499,54 @@ When you search Bloomberg for a stock, extract the sentiment from the articles:
 - **If sentiments DIFFER**: Use the Bloomberg sentiment (live data takes priority)
 - Report both sentiments in your analysis
 
-[RISK TOLERANCE MAPPING]
-Your Risk Profile is: ${userRisk}
-- **Low Risk** → Recommend stocks with "Positive" or "Very Positive" sentiment
-- **Medium Risk** → Recommend stocks with "Neutral" sentiment
-- **High Risk** → Recommend stocks with "Negative" or "Very Negative" sentiment
+[RISK TOLERANCE MAPPING - CRITICAL]
+Your Risk Profile is: **${userRisk}**
+
+**Risk Profile Logic (Investment Strategy):**
+- **Low Risk** (Conservative): Investors seeking stability and capital preservation
+  → Recommend **stable, established companies** with Positive sentiment (large-cap, low volatility)
+  → Examples: AAPL, MSFT, V (stable tech/finance), or Neutral stocks like GOOGL, JPM
+
+- **Medium Risk** (Moderate): Investors seeking balanced growth with moderate risk
+  → Recommend **mix of Positive and Neutral** sentiment stocks (balanced portfolio)
+  → Examples: AAPL, MSFT (stable growth) or TSLA, GOOGL (moderate volatility)
+
+- **High Risk** (Aggressive): Investors seeking high returns and willing to accept high volatility
+  → Recommend **high-growth stocks** with Very Positive sentiment (high volatility, high potential)
+  → Examples: NVDA, META (high-growth tech), or high-performing Positive stocks
+
+**You MUST select from these candidate stocks based on risk profile:**
+- **Low Risk** → ONLY consider: ${getCandidatesByRisk("Low")}
+- **Medium Risk** → ONLY consider: ${getCandidatesByRisk("Medium")}
+- **High Risk** → ONLY consider: ${getCandidatesByRisk("High")}
+
+**⚠️ IMPORTANT RULES:**
+1. **DO NOT always recommend the same stock** (e.g., AAPL). Vary your recommendations based on the risk profile.
+2. **For ${userRisk} risk**, you MUST choose from: ${candidates}
+3. **You MUST verify at least 2-3 candidate stocks** before making a final recommendation
+4. **Select the BEST stock from the candidates** that matches the risk profile, not just the first one you check
+5. **NEVER recommend Negative or Very Negative stocks** - these indicate poor sentiment and should be avoided for all risk profiles
 
 [TASK]
 1. Check portfolio using 'manage_portfolio'.
-2. Based on Risk Profile (${userRisk}), identify candidate stocks from the internal database.
-3. **For each candidate stock**, search Bloomberg: "site:bloomberg.com [TICKER] stock news today"
+2. **Identify ALL candidate stocks** for ${userRisk} risk profile: ${candidates}
+3. **For EACH candidate stock**, search Bloomberg: "site:bloomberg.com [TICKER] stock news today"
+   - You MUST check multiple candidates (at least 2-3), not just one
 4. **Extract sentiment from Bloomberg articles** and compare with Internal DB sentiment:
    - If match: Use Internal DB sentiment
    - If differ: Use Bloomberg sentiment (prefer live data)
-5. **Select ONE stock** that matches your Risk Profile mapping (see above).
+5. **Compare all verified candidates** and select the ONE BEST stock that matches your Risk Profile mapping.
 6. **CRITICAL**: At the END of your response, provide a CLEAR recommendation:
 
 📊 RECOMMENDATION: [TICKER]
 - Internal Sentiment: [from mockData]
 - Bloomberg Sentiment: [from live search]
 - Final Sentiment Used: [which one you're using and why]
-- Reason: [Why this stock matches ${userRisk} risk profile]
+- Reason: [Why this stock matches ${userRisk} risk profile and why it's better than other candidates]
 - Action: [Buy/Hold/Avoid and why]
 
 **Make sure your recommendation is at the very end of your response!**
+**DO NOT always recommend AAPL - vary your recommendations based on risk profile!**
 `;
 
   const userQuery =
