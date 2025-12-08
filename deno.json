@@ -4,6 +4,12 @@
     "rxjs-for-await": "npm:rxjs-for-await@^1.0.0",
     "@std/path": "https://deno.land/std@0.224.0/path/mod.ts",
     "@std/fmt/colors": "https://deno.land/std@0.224.0/fmt/colors.ts",
+    "@std/http": "https://deno.land/std@0.224.0/http/mod.ts",
     "zod": "npm:zod@^4.1.13"
+  },
+  "tasks": {
+    "main": "deno run --allow-read --allow-env --allow-run --env-file=.env src/main.ts",
+    "server": "deno run --allow-net --allow-read --allow-env --allow-run --env-file=.env src/server.ts",
+    "dev": "deno run --allow-net --allow-read --allow-env --allow-run --env-file=.env --watch src/server.ts"
   }
 }

@@ -41,6 +41,17 @@ export const getStockPriceTool = createTool({
 // 真正的读写本地 portfolio.json 文件
 const PORTFOLIO_PATH = join(Deno.cwd(), "src", "data", "portfolio.json");
 
+// Helper function to normalize portfolio keys to uppercase
+function normalizePortfolio(portfolio: { positions: Record<string, number> }) {
+  const normalized: Record<string, number> = {};
+  for (const [ticker, shares] of Object.entries(portfolio.positions)) {
+    const symbol = ticker.toUpperCase();
+    // Merge if multiple case variations exist
+    normalized[symbol] = (normalized[symbol] || 0) + shares;
+  }
+  return { positions: normalized };
+}
+
 export const managePortfolioTool = createTool({
   name: "manage_portfolio",
   description: "Read or Update the user's investment portfolio file.",
@@ -62,7 +73,19 @@ export const managePortfolioTool = createTool({
 
     // 2. 读取当前数据
     const content = await Deno.readTextFile(PORTFOLIO_PATH);
-    const portfolio = JSON.parse(content);
+    const rawPortfolio = JSON.parse(content) as {
+      positions: Record<string, number>;
+    };
+
+    // Normalize portfolio keys to uppercase for consistency
+    const portfolio = normalizePortfolio(rawPortfolio);
+
+    // If normalization changed anything, save the normalized version
+    const originalContent = JSON.stringify(rawPortfolio);
+    const normalizedContent = JSON.stringify(portfolio);
+    if (originalContent !== normalizedContent) {
+      await Deno.writeTextFile(PORTFOLIO_PATH, normalizedContent);
+    }
 
     if (action === "read") {
       return `📂 Current Portfolio:\n${JSON.stringify(portfolio, null, 2)}`;
@@ -73,10 +96,12 @@ export const managePortfolioTool = createTool({
         return "Error: Ticker and amount are required for update action.";
       }
 
-      const currentShares = portfolio.positions[ticker] || 0;
+      // Normalize ticker to uppercase for consistency with other tools
+      const symbol = ticker.toUpperCase();
+      const currentShares = portfolio.positions[symbol] || 0;
       const newShares = currentShares + amount;
 
-      portfolio.positions[ticker] = newShares;
+      portfolio.positions[symbol] = newShares;
 
       // 写入文件
       await Deno.writeTextFile(
@@ -86,7 +111,7 @@ export const managePortfolioTool = createTool({
 
       return `✅ Portfolio Updated: ${
         amount > 0 ? "Bought" : "Sold"
-      } ${Math.abs(amount)} shares of ${ticker}. Total: ${newShares}`;
+      } ${Math.abs(amount)} shares of ${symbol}. Total: ${newShares}`;
     }
 
     return "Invalid action.";
