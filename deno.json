@@ -8,8 +8,8 @@
     "zod": "npm:zod@^4.1.13"
   },
   "tasks": {
-    "main": "deno run --allow-read --allow-env --allow-run --env-file=.env src/main.ts",
-    "server": "deno run --allow-net --allow-read --allow-env --allow-run --env-file=.env src/server.ts",
-    "dev": "deno run --allow-net --allow-read --allow-env --allow-run --env-file=.env --watch src/server.ts"
+    "main": "deno run --allow-read --allow-env --allow-run --allow-sys --env-file=.env src/main.ts",
+    "server": "deno run --allow-net --allow-read --allow-env --allow-run --allow-sys --env-file=.env src/server.ts",
+    "dev": "deno run --allow-net --allow-read --allow-env --allow-run --allow-sys --env-file=.env --watch src/server.ts"
   }
 }
