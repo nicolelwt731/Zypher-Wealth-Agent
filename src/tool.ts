@@ -1,7 +1,6 @@
 // src/tools.ts
 import { createTool } from "@corespeed/zypher/tools";
 import { z } from "zod";
-import { join } from "@std/path";
 import { STOCK_DATA } from "./data/mockData.ts";
 
 // --- 工具 1: 获取股票价格 (Mock with Rich Output) ---
@@ -37,88 +36,7 @@ export const getStockPriceTool = createTool({
   },
 });
 
-// --- 工具 2: 投资组合管理 (Real File I/O) ---
-// 真正的读写本地 portfolio.json 文件
-const PORTFOLIO_PATH = join(Deno.cwd(), "src", "data", "portfolio.json");
-
-// Helper function to normalize portfolio keys to uppercase
-function normalizePortfolio(portfolio: { positions: Record<string, number> }) {
-  const normalized: Record<string, number> = {};
-  for (const [ticker, shares] of Object.entries(portfolio.positions)) {
-    const symbol = ticker.toUpperCase();
-    // Merge if multiple case variations exist
-    normalized[symbol] = (normalized[symbol] || 0) + shares;
-  }
-  return { positions: normalized };
-}
-
-export const managePortfolioTool = createTool({
-  name: "manage_portfolio",
-  description: "Read or Update the user's investment portfolio file.",
-  schema: z.object({
-    action: z.enum(["read", "update"]).describe("Action to perform"),
-    ticker: z.string().optional().describe("Ticker symbol to update"),
-    amount: z.number().optional().describe("Number of shares to add/remove"),
-  }),
-  execute: async ({ action, ticker, amount }) => {
-    // 1. 确保文件存在
-    try {
-      await Deno.stat(PORTFOLIO_PATH);
-    } catch {
-      await Deno.writeTextFile(
-        PORTFOLIO_PATH,
-        JSON.stringify({ positions: {} })
-      );
-    }
-
-    // 2. 读取当前数据
-    const content = await Deno.readTextFile(PORTFOLIO_PATH);
-    const rawPortfolio = JSON.parse(content) as {
-      positions: Record<string, number>;
-    };
-
-    // Normalize portfolio keys to uppercase for consistency
-    const portfolio = normalizePortfolio(rawPortfolio);
-
-    // If normalization changed anything, save the normalized version
-    const originalContent = JSON.stringify(rawPortfolio);
-    const normalizedContent = JSON.stringify(portfolio);
-    if (originalContent !== normalizedContent) {
-      await Deno.writeTextFile(PORTFOLIO_PATH, normalizedContent);
-    }
-
-    if (action === "read") {
-      return `📂 Current Portfolio:\n${JSON.stringify(portfolio, null, 2)}`;
-    }
-
-    if (action === "update") {
-      if (!ticker || amount === undefined) {
-        return "Error: Ticker and amount are required for update action.";
-      }
-
-      // Normalize ticker to uppercase for consistency with other tools
-      const symbol = ticker.toUpperCase();
-      const currentShares = portfolio.positions[symbol] || 0;
-      const newShares = currentShares + amount;
-
-      portfolio.positions[symbol] = newShares;
-
-      // 写入文件
-      await Deno.writeTextFile(
-        PORTFOLIO_PATH,
-        JSON.stringify(portfolio, null, 2)
-      );
-
-      return `✅ Portfolio Updated: ${
-        amount > 0 ? "Bought" : "Sold"
-      } ${Math.abs(amount)} shares of ${symbol}. Total: ${newShares}`;
-    }
-
-    return "Invalid action.";
-  },
-});
-
-// --- 工具 3: 新闻搜索 (Local Mock for Stability) ---
+// --- 工具 2: 新闻搜索 (Local Mock for Stability) ---
 // 虽然你想用 Firecrawl，但为了 Demo 稳定，我们先定义一个本地版。
 // 下面的 main.ts 里我会教你怎么把 Firecrawl 加上去。
 export const searchNewsTool = createTool({

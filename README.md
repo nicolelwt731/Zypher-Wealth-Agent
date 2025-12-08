@@ -61,7 +61,6 @@ An AI-powered investment assistant that provides stock recommendations based on 
 │   ├── memory.ts         # Memory management
 │   └── data/
 │       ├── mockData.ts   # Stock data
-│       ├── portfolio.json # User portfolio data
 │       └── agent_memory.json # User profile and preferences
 └── public/
     ├── index.html        # Frontend UI
@@ -101,10 +100,32 @@ The `MemoryManager` is automatically used by the agent to:
 
 ### Data Location
 
-- **Memory File**: `src/data/agent_memory.json`
-- **Portfolio File**: `src/data/portfolio.json`
+The system uses two separate JSON files for different purposes:
 
-Both files are automatically created if they don't exist.
+#### 1. `agent_memory.json` - User Profile & Preferences
+
+**Purpose**: Stores user's personal preferences and interaction history
+
+**Structure**:
+
+```json
+{
+  "risk_tolerance": "Low",
+  "last_interaction": "2025-12-08T17:53:00.009Z",
+  "investment_focus": "Tech"
+}
+```
+
+**Contains**:
+
+- `risk_tolerance`: User's risk profile (Low/Medium/High)
+- `last_interaction`: Timestamp of last agent interaction
+- `investment_focus`: Optional investment focus area
+
+**Managed by**: `MemoryManager` class in `memory.ts`
+**Updated when**: User sets risk tolerance or interacts with agent
+
+The memory file is automatically created if it doesn't exist.
 
 ## Running
 
