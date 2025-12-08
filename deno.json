@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "@corespeed/zypher": "jsr:@corespeed/zypher@^0.6.1",
+    "rxjs-for-await": "npm:rxjs-for-await@^1.0.0",
+    "@std/path": "https://deno.land/std@0.224.0/path/mod.ts",
+    "@std/fmt/colors": "https://deno.land/std@0.224.0/fmt/colors.ts"
+  }
+}
