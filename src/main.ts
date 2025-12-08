@@ -6,7 +6,7 @@ import {
 import { eachValueFrom } from "rxjs-for-await";
 import { STOCK_DATA } from "./data/mockData.ts";
 import { MemoryManager } from "./memory.ts";
-import { getStockPriceTool, managePortfolioTool } from "./tool.ts";
+import { getStockPriceTool } from "./tool.ts";
 import { bold, cyan, green, yellow, gray, red, bgBlue } from "@std/fmt/colors";
 
 // --- Helpers ---
@@ -108,7 +108,6 @@ export async function* agentRunner(
 
     // Register tools
     agent.mcp.registerTool(getStockPriceTool);
-    agent.mcp.registerTool(managePortfolioTool);
 
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
     if (firecrawlKey) {
@@ -130,10 +129,6 @@ export async function* agentRunner(
         description:
           "Get the current stock price and daily performance stats from internal database.",
       },
-      {
-        name: "manage_portfolio",
-        description: "Read or Update the user's investment portfolio file.",
-      },
     ];
 
     if (firecrawlKey) {
@@ -153,8 +148,8 @@ export async function* agentRunner(
 
     // Load memory
     yield { type: "status", data: "Loading user profile..." };
-    let userMemory = await memoryManager.loadMemory();
-    let userRisk = userMemory.risk_tolerance || riskTolerance;
+    const userMemory = await memoryManager.loadMemory();
+    const userRisk = userMemory.risk_tolerance || riskTolerance;
 
     if (!userMemory.risk_tolerance) {
       await memoryManager.saveMemory({ risk_tolerance: userRisk });
@@ -249,8 +244,7 @@ Your Risk Profile is: **${userRisk}**
 5. **NEVER recommend Negative or Very Negative stocks** - these indicate poor sentiment and should be avoided for all risk profiles
 
 [TASK]
-1. Check portfolio using 'manage_portfolio'.
-2. **Identify ALL candidate stocks** for ${userRisk} risk profile: ${candidates}
+1. **Identify ALL candidate stocks** for ${userRisk} risk profile: ${candidates}
 3. **For EACH candidate stock**, search Bloomberg: "site:bloomberg.com [TICKER] stock news today"
    - You MUST check multiple candidates (at least 2-3), not just one
 4. **Extract sentiment from Bloomberg articles** and compare with Internal DB sentiment:
@@ -375,7 +369,6 @@ if (import.meta.main) {
   // Register tools
   console.log("🛠️  Registering Custom Tools...");
   agent.mcp.registerTool(getStockPriceTool);
-  agent.mcp.registerTool(managePortfolioTool);
 
   const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
   if (firecrawlKey) {
@@ -397,10 +390,6 @@ if (import.meta.main) {
       name: "get_stock_price",
       description:
         "Get the current stock price and daily performance stats from internal database.",
-    },
-    {
-      name: "manage_portfolio",
-      description: "Read or Update the user's investment portfolio file.",
     },
   ];
 
@@ -528,8 +517,7 @@ Your Risk Profile is: **${userRisk}**
 5. **NEVER recommend Negative or Very Negative stocks** - these indicate poor sentiment and should be avoided for all risk profiles
 
 [TASK]
-1. Check portfolio using 'manage_portfolio'.
-2. **Identify ALL candidate stocks** for ${userRisk} risk profile: ${candidates}
+1. **Identify ALL candidate stocks** for ${userRisk} risk profile: ${candidates}
 3. **For EACH candidate stock**, search Bloomberg: "site:bloomberg.com [TICKER] stock news today"
    - You MUST check multiple candidates (at least 2-3), not just one
 4. **Extract sentiment from Bloomberg articles** and compare with Internal DB sentiment:
@@ -550,7 +538,7 @@ Your Risk Profile is: **${userRisk}**
 `;
 
   const userQuery =
-    "Check my portfolio. Then, given my risk profile, recommend a stock but verify it with live news first.";
+    "Given my risk profile, recommend a stock but verify it with live news first.";
   console.log(gray(`👤 User Query: "${userQuery}"`));
   console.log(gray("Thinking & Acting...\n"));
 

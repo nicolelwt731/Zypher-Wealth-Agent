@@ -8,7 +8,6 @@ const riskSelect = document.getElementById("riskSelect");
 const queryInput = document.getElementById("queryInput");
 const runButton = document.getElementById("runButton");
 const outputContainer = document.getElementById("outputContainer");
-const toolsContainer = document.getElementById("toolsContainer");
 const statusIndicator = document.getElementById("statusIndicator");
 const statusText = document.getElementById("statusText");
 const statusDot = statusIndicator.querySelector(".status-dot");
@@ -82,7 +81,6 @@ async function runAgent() {
   runButton.disabled = true;
   runButton.textContent = "⏳ Running...";
   outputContainer.innerHTML = '<div class="status">Initializing agent...</div>';
-  toolsContainer.innerHTML = "";
   updateStatus("Running", "waiting");
 
   // Close previous connection if any
@@ -151,10 +149,6 @@ function handleEvent(data) {
       updateStatus(`Risk Profile: ${data.data}`, "waiting");
       break;
 
-    case "tool":
-      addToolCall(data.data);
-      break;
-
     case "recommendation":
       displayRecommendation(data.data);
       break;
@@ -177,27 +171,6 @@ function displayRecommendation(text) {
   outputContainer.innerHTML = `<div class="recommendation">${escapeHtml(
     text
   )}</div>`;
-}
-
-// Add tool call
-function addToolCall(toolData) {
-  if (toolsContainer.querySelector(".tools-placeholder")) {
-    toolsContainer.innerHTML = "";
-  }
-
-  const toolDiv = document.createElement("div");
-  toolDiv.className = "tool-call";
-  toolDiv.innerHTML = `
-        <div class="tool-call-name">🛠️ ${toolData.name}</div>
-        <div class="tool-call-args">${JSON.stringify(
-          toolData.arguments || {},
-          null,
-          2
-        )}</div>
-    `;
-
-  toolsContainer.appendChild(toolDiv);
-  toolsContainer.scrollTop = toolsContainer.scrollHeight;
 }
 
 // Finish run
